@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
 
 import java.util.Calendar;
@@ -20,7 +21,7 @@ public class AutoPowerBroadcastReceive extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         // TODO Auto-generated method stub
         SharedPreferences sharedPreferences = context.getSharedPreferences("private_date", Context.MODE_PRIVATE);
-        Log.e("##DFC##", "ShutdownBroadcastReceive---1");
+        Log.e(TAG, "ShutdownBroadcastReceive");
 
         if ((Objects.equals(intent.getAction(), Intent.ACTION_BOOT_COMPLETED))) {
             Log.d(TAG, "onReceive");
@@ -84,13 +85,17 @@ public class AutoPowerBroadcastReceive extends BroadcastReceiver {
                     am.setWindow(AlarmManager.ELAPSED_REALTIME_WAKEUP, calendar.getTimeInMillis(), 5, pendingIntent_on);
                 }
             } else if (Objects.equals(intent.getAction(), "com.android.settings.action.REQUEST_POWER_OFF")) {
-                Log.e("##DFC##", "Receive Shutdown Broadcast\n");
-                Intent shutdown_intent = new Intent("android.intent.action.ACTION_REQUEST_SHUTDOWN");
+                Log.e(TAG, "Receive Shutdown Broadcast\n");
+                String action = "com.android.internal.intent.action.REQUEST_SHUTDOWN";
+                if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.N){
+                    action = "android.intent.action.ACTION_REQUEST_SHUTDOWN";
+                }
+                Intent shutdown_intent = new Intent(action);
                 shutdown_intent.putExtra("android.intent.extra.KEY_CONFIRM", false);
                 shutdown_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(shutdown_intent);
             } else if (Objects.equals(intent.getAction(), "com.android.settings.action.REQUEST_POWER_ON")) {
-                Log.e("##DFC##", "Receive PowerOn Broadcast\n");
+                Log.e(TAG, "Receive PowerOn Broadcast\n");
             }
         }
     }
