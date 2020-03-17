@@ -1,5 +1,52 @@
 apply plugin: 'com.android.application'
 
+ext {
+    isRelease = checkRelease()
+}
+
+def checkRelease() {
+    def runTasks = gradle.startParameter.taskNames
+    for (String task : runTasks) {
+        if (task.contains("assemble") && !task.contains("Debug")) {
+            return true
+        }
+    }
+    return false
+}
+
+def increasedVersionCode() {
+    def propFile = file('../gradle.properties')
+    Properties props = new Properties()
+    props.load(new FileInputStream(propFile))
+    def code = props['VERSION_CODE'].toInteger()
+    if (isRelease) {
+        code++
+        props['VERSION_CODE'] = code.toString()
+        props.store(propFile.newWriter(), null)
+    }
+    return code
+}
+
+static def lastGitCommit() {
+    try{
+        return 'git log --pretty=format:%h -1'.execute().text.trim()
+    }catch (ignored){
+        return "0000000"
+    }
+}
+
+def changeVersionName() {
+    def propFile = file('../gradle.properties')
+    Properties props = new Properties()
+    props.load(new FileInputStream(propFile))
+    def code = props['VERSION_CODE'].toInteger()
+    if (isRelease) {
+        def gitCommitLog= lastGitCommit()
+        return code+"."+gitCommitLog
+    }
+    return ""
+}
+
 android {
     signingConfigs {
         config { //rk3288 android6.0 system sign
@@ -15,10 +62,19 @@ android {
         applicationId "com.adv.poweronoff"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+        versionCode increasedVersionCode()
+        versionName changeVersionName()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    applicationVariants.all { variant ->
+        if ("release" == variant.buildType.name) {
+            variant.outputs.all {
+                outputFileName = "PowerOnOff_v${defaultConfig.versionName}.apk"
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
