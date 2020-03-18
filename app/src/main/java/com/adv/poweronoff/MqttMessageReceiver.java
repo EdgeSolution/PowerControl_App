@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
 
 import com.adv.localmqtt.MQTTWrapper;
@@ -19,6 +20,7 @@ import java.util.Calendar;
 
 public class MqttMessageReceiver extends MqttV3MessageReceiver {
     private final String TAG = "MqttMessageReceiver";
+
     private static final String Action_POWERON = "com.android.settings.action.REQUEST_POWER_ON";
     private static final String Action_POWEROFF = "com.android.settings.action.REQUEST_POWER_OFF";
     private static final String Action_POWERON_CANCLE ="com.android.settings.action.CANCLE_POWER_ON";
@@ -95,24 +97,42 @@ public class MqttMessageReceiver extends MqttV3MessageReceiver {
                             switch (funcId) {
                                 case "set_shutdown":
                                     Log.d(TAG, "#set_shutdown#");
-                                    Intent intent_shutdown = new Intent("android.intent.action.ACTION_REQUEST_SHUTDOWN");
+                                    jsonObj.put("result", 0);
+                                    jsonObj.put("errcode", SUCCEED);
+                                    response = new Payload(messageId, appName, funcId, Integer.parseInt(option), 2, jsonObj.toString());
+                                    getMQTTWrapper().publish(genRespTopic(), response.genContent());
+                                    try {
+                                        Thread.sleep(1000);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    String action = "com.android.internal.intent.action.REQUEST_SHUTDOWN";
+                                    if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.N){
+                                        action = "android.intent.action.ACTION_REQUEST_SHUTDOWN";
+                                    }
+                                    Intent intent_shutdown = new Intent(action);
                                     intent_shutdown.putExtra("android.intent.extra.KEY_CONFIRM", false);
                                     intent_shutdown.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                     AppContext.getContextObject().startActivity(intent_shutdown);
-                                    jsonObj.put("result", 0);
-                                    jsonObj.put("errcode", SUCCEED);
-                                    break;
+                                    return;
                                 case "set_reboot":
                                     Log.d(TAG, "#set_reboot#");
+                                    jsonObj.put("result", 0);
+                                    jsonObj.put("errcode", SUCCEED);
+                                    response = new Payload(messageId, appName, funcId, Integer.parseInt(option), 2, jsonObj.toString());
+                                    getMQTTWrapper().publish(genRespTopic(), response.genContent());
+                                    try {
+                                        Thread.sleep(1000);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
                                     try {
                                         Runtime r = Runtime.getRuntime();
                                         r.exec("/system/bin/reboot");
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
-                                    jsonObj.put("result", 0);
-                                    jsonObj.put("errcode", SUCCEED);
-                                    break;
+                                    return;
                                 case "set_poweronoff_time":
                                     String[] strs = param.split(",");
                                     Log.d(TAG, "#set_poweronoff_time#  poweroff time: " + strs[0]+ " poweron time: " + strs[1]);
