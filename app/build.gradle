@@ -56,17 +56,15 @@ android {
             storeFile file('../platform.jks')
         }
     }
-
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.adv.poweronoff"
-        minSdkVersion 23
+        minSdkVersion 22
         targetSdkVersion 28
         versionCode increasedVersionCode()
         versionName changeVersionName()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
-
     applicationVariants.all { variant ->
         if ("release" == variant.buildType.name) {
             variant.outputs.all {
@@ -74,7 +72,6 @@ android {
             }
         }
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -82,11 +79,12 @@ android {
             signingConfig signingConfigs.config
         }
     }
-
+    productFlavors {
+    }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     testImplementation 'junit:junit:4.12'
     //implementation (name:'LocalMqtt-release',ext:'aar')

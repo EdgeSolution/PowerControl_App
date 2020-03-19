@@ -33,7 +33,8 @@
 
         <service
             android:name=".PowerOnOffService"
-            android:exported="false">
+            android:exported="true"
+            android:permission="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
