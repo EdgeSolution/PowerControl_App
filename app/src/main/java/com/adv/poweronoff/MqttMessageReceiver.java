@@ -137,6 +137,12 @@ public class MqttMessageReceiver extends MqttV3MessageReceiver {
                                     String[] strs = param.split(",");
                                     Log.d(TAG, "#set_poweronoff_time#  poweroff time: " + strs[0]+ " poweron time: " + strs[1]);
                                     if (sharedPreferences.getBoolean("auto_power", false)) {
+                                        editor = sharedPreferences.edit();
+                                        String offtime = Integer.parseInt(getPrefStrHour(strs[0])) + ":" + Integer.parseInt(getPrefStrMinute(strs[0]));
+                                        String ontime = Integer.parseInt(getPrefStrHour(strs[1])) + ":" + Integer.parseInt(getPrefStrMinute(strs[1]));
+                                        editor.putString("poweroff_time", offtime);
+                                        editor.putString("poweron_time", ontime);
+                                        editor.apply();
                                         if(!setPowerOff(AppContext.getContextObject(),Integer.parseInt(getPrefStrHour(strs[0])), Integer.parseInt(getPrefStrMinute(strs[0])))){
                                             jsonObj.put("result", 1);
                                             jsonObj.put("errcode", UNKNOWN_REASON);
@@ -147,10 +153,6 @@ public class MqttMessageReceiver extends MqttV3MessageReceiver {
                                             jsonObj.put("errcode", UNKNOWN_REASON);
                                             break;
                                         }
-                                        editor = sharedPreferences.edit();
-                                        editor.putString("poweroff_time", strs[0]);
-                                        editor.putString("poweron_time", strs[1]);
-                                        editor.apply();
 
                                         jsonObj.put("result", 0);
                                         jsonObj.put("errcode", SUCCEED);
